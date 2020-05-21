@@ -9,10 +9,13 @@ Basic Echobot example, repeats messages.
 Press Ctrl-C on the command line or send a signal to the process to stop the
 bot.
 """
-
+import time
 import logging
+import sys
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+
+import beauty
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -25,17 +28,22 @@ logger = logging.getLogger(__name__)
 # context. Error handlers also receive the raised TelegramError object in error.
 def start(update, context):
     """Send a message when the command /start is issued."""
-    update.message.reply_text('Hi!')
+    update.message.reply_text('請說正妹')
 
 
 def help(update, context):
     """Send a message when the command /help is issued."""
-    update.message.reply_text('Help!')
+    update.message.reply_text('請說正妹')
 
 
 def echo(update, context):
     """Echo the user message."""
-    update.message.reply_text(update.message.text)
+
+    if '正妹' == update.message.text:
+        reply = beauty.pickup()[0]
+    else:
+        reply = '請說正妹'
+    update.message.reply_text(reply)
 
 
 def error(update, context):
@@ -48,8 +56,13 @@ def main():
     # Create the Updater and pass it your bot's token.
     # Make sure to set use_context=True to use the new context based callbacks
     # Post version 12 this will no longer be necessary
-    with open('./token.txt', 'r') as f:
-        token = f.read()
+
+    try:
+        with open('./token.txt', 'r') as f:
+            token = f.read()
+    except FileNotFoundError:
+        print('Please set your token in token.txt')
+        sys.exit()
     updater = Updater(token, use_context=True)
 
     # Get the dispatcher to register handlers
@@ -64,6 +77,12 @@ def main():
 
     # log all errors
     dp.add_error_handler(error)
+
+    beauty.start()
+    time.sleep(5)
+
+    while beauty.in_update:
+        time.sleep(1)
 
     # Start the Bot
     updater.start_polling()
