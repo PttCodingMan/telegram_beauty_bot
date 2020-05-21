@@ -13,6 +13,7 @@ from PyPtt import PTT
 Woman = []
 in_update = False
 
+
 def get_pw():
     try:
         with open('account.txt') as AccountFile:
@@ -55,7 +56,7 @@ def update():
         ('Beauty', PTT.data_type.post_search_type.PUSH, '50'),
     ]
 
-    max_piture = 2000
+    max_picture = 2000
 
     for (board, search_type, condition) in crawl_list:
 
@@ -68,7 +69,7 @@ def update():
             )
             # print(f'{board} 最新文章編號 {Index}')
 
-            random_post_index = [i for i in range(index - 2000, index + 1)]
+            random_post_index = [i for i in range(index - max_picture, index + 1)]
 
             random.shuffle(random_post_index)
 
@@ -87,9 +88,14 @@ def update():
                 if post.delete_status != PTT.data_type.post_delete_status.NOT_DELETED:
                     continue
 
+                if '[正妹]' not in post.title and '[廣告]' not in post.title:
+                    continue
+
                 # print(Post.getContent())
 
                 content = post.content
+                content = content[:content.find('--')]
+                # print(content)
 
                 all_pic_id = re.findall(
                     r'https://(.+).jpg',
@@ -99,18 +105,30 @@ def update():
                 for album in all_pic_id:
                     pic_url = f'https://{album}.jpg'
 
-                    if pic_url.startswith('https://imgur'):
-                        pic_url = pic_url.replace('https://imgur', 'https://i.imgur')
+                    if pic_url not in woman_temp:
+                        woman_temp.append(pic_url)
+                        catch_pic += 1
 
-                    if '[正妹]' in post.title or '[廣告]' in post.title:
-                        if pic_url not in woman_temp:
-                            woman_temp.append(pic_url)
-                            catch_pic += 1
-                            print(f'已抓取 {catch_pic} 張圖')
-
-                    if catch_pic >= max_piture:
+                    if catch_pic >= max_picture:
                         break
-                if catch_pic >= max_piture:
+                if catch_pic >= max_picture:
+                    break
+
+                all_pic_id = re.findall(
+                    r'https://(.+).gif',
+                    content
+                )
+
+                for album in all_pic_id:
+                    pic_url = f'https://{album}.gif'
+
+                    if pic_url not in woman_temp:
+                        woman_temp.append(pic_url)
+                        catch_pic += 1
+
+                    if catch_pic >= max_picture:
+                        break
+                if catch_pic >= max_picture:
                     break
 
                 # https://imgur.com/ZAthTSl
@@ -120,24 +138,28 @@ def update():
                 )
 
                 for album in all_pic_id:
+                    if album.endswith('jpg'):
+                        type = 'jpg'
+                    else:
+                        type = 'gif'
                     if '.' in album:
                         album = album[:album.find('.')]
                     if len(album) != 7:
                         continue
 
-                    pic_url = f'https://i.imgur.com/{album}.jpg'
+                    pic_url = f'https://i.imgur.com/{album}.{type}'
 
-                    if '[正妹]' in post.title or '[廣告]' in post.title:
-                        if pic_url not in woman_temp:
-                            woman_temp.append(pic_url)
-                            catch_pic += 1
-                            # print(f'已抓取 {Piture} 張圖')
+                    if pic_url not in woman_temp:
+                        woman_temp.append(pic_url)
+                        catch_pic += 1
 
-                    if catch_pic >= max_piture:
+                    if catch_pic >= max_picture:
                         break
 
-                if catch_pic >= max_piture:
+                if catch_pic >= max_picture:
                     break
+
+                # print(f'已抓取 {catch_pic} 張圖')
 
         except Exception as e:
             traceback.print_tb(e.__traceback__)
@@ -149,6 +171,7 @@ def update():
 
     Woman = woman_temp
     in_update = False
+
     print('更新完畢')
     # print(f'Woman length {len(Woman)}')
 
@@ -164,7 +187,7 @@ def timer():
             tomorrow.year,
             tomorrow.month,
             tomorrow.day,
-            2,
+            6,
             0,
             0)
 
@@ -205,3 +228,4 @@ if __name__ == "__main__":
     # print(pickup())
 
     start(test_mode=True)
+
