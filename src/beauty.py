@@ -131,34 +131,6 @@ def update():
                 if catch_pic >= max_picture:
                     break
 
-                # https://imgur.com/ZAthTSl
-                all_pic_id = re.findall(
-                    r'https://imgur.com/(.+)',
-                    content
-                )
-
-                for album in all_pic_id:
-                    if album.endswith('jpg'):
-                        type = 'jpg'
-                    else:
-                        type = 'gif'
-                    if '.' in album:
-                        album = album[:album.find('.')]
-                    if len(album) != 7:
-                        continue
-
-                    pic_url = f'https://i.imgur.com/{album}.{type}'
-
-                    if pic_url not in woman_temp:
-                        woman_temp.append(pic_url)
-                        catch_pic += 1
-
-                    if catch_pic >= max_picture:
-                        break
-
-                if catch_pic >= max_picture:
-                    break
-
                 # print(f'已抓取 {catch_pic} 張圖')
 
         except Exception as e:

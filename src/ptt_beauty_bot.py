@@ -1,4 +1,3 @@
-
 """
 Simple Bot to reply to Telegram messages.
 First, a few handler functions are defined. Then, those functions are passed to
@@ -23,27 +22,49 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
+welcome_msg = '''歡迎使用表特板機器人
+每天自動更新 2000 張表特板 30 推以上的圖
+品質有保障
+由 CodingMan 開發
+
+使用方法
+請說「正妹」或「一群正妹」'''
 
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
 def start(update, context):
     """Send a message when the command /start is issued."""
-    update.message.reply_text('請說正妹')
+
+    update.message.reply_text(welcome_msg)
 
 
 def help(update, context):
     """Send a message when the command /help is issued."""
-    update.message.reply_text('請說正妹')
+    update.message.reply_text('請說「正妹」或「一群正妹」')
 
 
 def echo(update, context):
     """Echo the user message."""
 
-    if '正妹' == update.message.text:
-        reply = beauty.pickup()[0]
+    chat_id = update.message.chat.username
+    print(f'[{chat_id}][{update.message.text}]')
+
+    if '正妹' in update.message.text:
+        picture = 0
+        if '正妹' == update.message.text:
+            picture = 1
+        if '一群正妹' == update.message.text:
+            picture = 3
+
+        if picture == 0:
+            update.message.reply_text(welcome_msg)
+            return
+
+        picture_list = beauty.pickup(picture)
+        for p in picture_list:
+            update.message.reply_text(p)
     else:
-        reply = '請說正妹'
-    update.message.reply_text(reply)
+        update.message.reply_text(welcome_msg)
 
 
 def error(update, context):
@@ -84,6 +105,7 @@ def main():
     while beauty.in_update:
         time.sleep(1)
 
+    print('表特板機器人啟動')
     # Start the Bot
     updater.start_polling()
 
