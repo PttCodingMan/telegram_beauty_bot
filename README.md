@@ -1,4 +1,4 @@
 # Telegram beauty bot
 
 用來練習 Telegram bot 的專案  
-[測試機器人](https://t.me/CodingMan_ptt_beauty_bot)
+[機器人傳送門](https://t.me/CodingMan_ptt_beauty_bot)
