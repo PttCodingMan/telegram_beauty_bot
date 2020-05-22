@@ -13,6 +13,7 @@ import logging
 import sys
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram import ReplyKeyboardMarkup
 
 import beauty
 
@@ -35,7 +36,11 @@ welcome_msg = '''歡迎使用表特板機器人
 def start(update, context):
     """Send a message when the command /start is issued."""
 
-    update.message.reply_text(welcome_msg)
+    custom_keyboard = [['正妹', '一群正妹']]
+    reply_markup = ReplyKeyboardMarkup(custom_keyboard)
+    context.bot.send_message(chat_id=update.effective_chat.id,
+                             text="請稍後",
+                             reply_markup=reply_markup)
 
 
 def help(update, context):
@@ -62,7 +67,13 @@ def echo(update, context):
 
         picture_list = beauty.pickup(picture)
         for p in picture_list:
-            update.message.reply_text(p)
+
+            if p.endswith('jpg') or p.endswith('png'):
+                context.bot.send_photo(chat_id=update.effective_chat.id, photo=p)
+            elif p.endswith('gif'):
+                context.bot.send_animation(update.effective_chat.id, 'https://i.imgur.com/QqMJj4K.gif')
+            else:
+                update.message.reply_text(p)
     else:
         update.message.reply_text(welcome_msg)
 
