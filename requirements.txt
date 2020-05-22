@@ -1,0 +1,2 @@
+PyPtt
+python-telegram-bot
