@@ -12,7 +12,7 @@ import logging
 import sys
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-from telegram import ReplyKeyboardMarkup
+from telegram import ReplyKeyboardMarkup, InputMediaPhoto
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -58,11 +58,17 @@ def echo(update, context):
     # context.bot.send_photo(chat_id=update.effective_chat.id, photo='https://i.imgur.com/QY7WdgG.jpg')
     # context.bot.send_animation(update.effective_chat.id, 'https://i.imgur.com/QqMJj4K.gif')
 
-    custom_keyboard = [['正妹', '一群正妹']]
-    reply_markup = ReplyKeyboardMarkup(custom_keyboard)
-    context.bot.send_message(chat_id=update.effective_chat.id,
-                     text="Custom Keyboard Test",
-                     reply_markup=reply_markup)
+    file_list = [
+        InputMediaPhoto('https://i.imgur.com/QY7WdgG.jpg')
+    ] * 10
+
+    context.bot.sendMediaGroup(chat_id=update.effective_chat.id, media=file_list)
+
+    # custom_keyboard = [['正妹', '一群正妹']]
+    # reply_markup = ReplyKeyboardMarkup(custom_keyboard)
+    # context.bot.send_message(chat_id=update.effective_chat.id,
+    #                  text="Custom Keyboard Test",
+    #                  reply_markup=reply_markup)
 
 
 
