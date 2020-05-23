@@ -13,7 +13,7 @@ import logging
 import sys
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-from telegram import ReplyKeyboardMarkup
+from telegram import ReplyKeyboardMarkup, InputMediaPhoto, InputMediaAnimation
 
 import beauty
 
@@ -24,9 +24,8 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 welcome_msg = '''歡迎使用表特板機器人
-每天自動更新 2000 張表特板 30 推以上的圖
-品質有保障
-由 CodingMan 開發
+每天自動更新 2000 張表特板 50 推以上的圖
+品質有保障，此專案由 CodingMan 開發
 
 使用方法
 請說「正妹」或「一群正妹」'''
@@ -66,14 +65,24 @@ def echo(update, context):
             return
 
         picture_list = beauty.pickup(picture)
+
+        send_file_list = []
         for p in picture_list:
 
+            current_file = None
             if p.endswith('jpg') or p.endswith('png'):
-                context.bot.send_photo(chat_id=update.effective_chat.id, photo=p)
+                # context.bot.send_photo(chat_id=update.effective_chat.id, photo=p)
+                current_file = InputMediaPhoto(p)
             elif p.endswith('gif'):
-                context.bot.send_animation(update.effective_chat.id, 'https://i.imgur.com/QqMJj4K.gif')
-            else:
-                update.message.reply_text(p)
+                # context.bot.send_animation(update.effective_chat.id, 'https://i.imgur.com/QqMJj4K.gif')
+                # current_file = InputMediaAnimation(p)
+                pass
+            if current_file is None:
+                continue
+
+            send_file_list.append(current_file)
+
+        context.bot.sendMediaGroup(chat_id=update.effective_chat.id, media=send_file_list)
     else:
         update.message.reply_text(welcome_msg)
 
