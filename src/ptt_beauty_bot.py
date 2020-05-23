@@ -28,7 +28,7 @@ welcome_msg = '''歡迎使用表特板機器人
 品質有保障，此專案由 CodingMan 開發
 
 使用方法
-請說「正妹」或「一群正妹」'''
+請選擇「正妹」或「一群正妹」'''
 
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
@@ -38,7 +38,7 @@ def start(update, context):
     custom_keyboard = [['正妹', '一群正妹']]
     reply_markup = ReplyKeyboardMarkup(custom_keyboard)
     context.bot.send_message(chat_id=update.effective_chat.id,
-                             text="請稍後",
+                             text=welcome_msg,
                              reply_markup=reply_markup)
 
 
