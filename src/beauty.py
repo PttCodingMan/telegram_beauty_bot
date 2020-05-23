@@ -114,22 +114,39 @@ def update():
                 if catch_pic >= max_picture:
                     break
 
-                all_pic_id = re.findall(
-                    r'https://(.+).gif',
-                    content
-                )
+                # all_pic_id = re.findall(
+                #     r'https://(.+).png',
+                #     content
+                # )
+                #
+                # for album in all_pic_id:
+                #     pic_url = f'https://{album}.png'
+                #
+                #     if pic_url not in woman_temp:
+                #         woman_temp.append(pic_url)
+                #         catch_pic += 1
+                #
+                #     if catch_pic >= max_picture:
+                #         break
+                # if catch_pic >= max_picture:
+                #     break
 
-                for album in all_pic_id:
-                    pic_url = f'https://{album}.gif'
-
-                    if pic_url not in woman_temp:
-                        woman_temp.append(pic_url)
-                        catch_pic += 1
-
-                    if catch_pic >= max_picture:
-                        break
-                if catch_pic >= max_picture:
-                    break
+                # all_pic_id = re.findall(
+                #     r'https://(.+).gif',
+                #     content
+                # )
+                #
+                # for album in all_pic_id:
+                #     pic_url = f'https://{album}.gif'
+                #
+                #     if pic_url not in woman_temp:
+                #         woman_temp.append(pic_url)
+                #         catch_pic += 1
+                #
+                #     if catch_pic >= max_picture:
+                #         break
+                # if catch_pic >= max_picture:
+                #     break
 
                 # print(f'已抓取 {catch_pic} 張圖')
 
