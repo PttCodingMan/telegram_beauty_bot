@@ -14,207 +14,184 @@ Woman = []
 in_update = False
 
 
-def get_pw():
-    try:
-        with open('account.txt') as AccountFile:
-            account = json.load(AccountFile)
-            id = account['ID']
-            password = account['Password']
-    except FileNotFoundError:
-        print('Please note PTT ID and Password in account.txt')
-        print('{"ID":"YourID", "Password":"YourPassword"}')
-        sys.exit()
+class CrawlBot:
+    def __init__(
+            self,
+            account_file_name,
+            board):
+        self.account_file_name = account_file_name
+        self.board = board
 
-    return id, password
+        self.ptt_id = None
+        self.ptt_password = None
 
+        self.Woman = None
+        self.temp_list = []
 
-def update():
-    global Woman
-    global in_update
-
-    in_update = True
-
-    woman_temp = []
-
-    ptt_id, ptt_pw = get_pw()
-
-    ptt_bot = PTT.API(
-        # LogLevel=PTT.LogLevel.TRACE,
-        # LogLevel=PTT.LogLevel.DEBUG,
-    )
-    try:
-        ptt_bot.login(
-            ptt_id,
-            ptt_pw,
-            kick_other_login=True
-        )
-    except PTT.Exceptions.LoginError:
-        ptt_bot.log('登入失敗')
-        return
-
-    crawl_list = [
-        ('Beauty', PTT.data_type.post_search_type.PUSH, '50'),
-    ]
-
-    max_picture = 2000
-
-    for (board, search_type, condition) in crawl_list:
-
+    def get_pw(self):
         try:
-            index = ptt_bot.get_newest_index(
-                PTT.data_type.index_type.BBS,
-                board,
-                search_type=search_type,
-                search_condition=condition,
+            with open(self.account_file_name) as AccountFile:
+                account = json.load(AccountFile)
+                self.ptt_id = account['ID']
+                self.ptt_password = account['Password']
+        except FileNotFoundError:
+            print(f'Please note PTT ID and Password in {self.account_file_name}')
+            print('{"ID":"YourID", "Password":"YourPassword"}')
+            sys.exit()
+
+    def update(self):
+        global Woman
+        global in_update
+
+        in_update = True
+
+        woman_temp = []
+
+        self.get_pw()
+
+        ptt_bot = PTT.API(
+            # LogLevel=PTT.LogLevel.TRACE,
+            # LogLevel=PTT.LogLevel.DEBUG,
+        )
+        try:
+            ptt_bot.login(
+                self.ptt_id,
+                self.ptt_password,
+                kick_other_login=True
             )
-            # print(f'{board} 最新文章編號 {Index}')
+        except PTT.exceptions.LoginError:
+            ptt_bot.log('登入失敗')
+            sys.exit()
+        except PTT.exceptions.WrongIDorPassword:
+            ptt_bot.log('帳號密碼錯誤')
+            sys.exit()
+        except PTT.exceptions.LoginTooOften:
+            ptt_bot.log('請稍等一下再登入')
+            sys.exit()
 
-            random_post_index = [i for i in range(index - max_picture, index + 1)]
+        crawl_list = [
+            ('Beauty', PTT.data_type.post_search_type.PUSH, '50'),
+        ]
 
-            random.shuffle(random_post_index)
+        max_picture = 2000
 
-            catch_pic = 0
-            for index in random_post_index:
+        for (board, search_type, condition) in crawl_list:
 
-                # print(f'準備解析第 {IndexList.index(index) + 1} 篇 編號 {index} 已經蒐集 {Piture} 張圖片')
-
-                post = ptt_bot.get_post(
+            try:
+                index = ptt_bot.get_newest_index(
+                    PTT.data_type.index_type.BBS,
                     board,
-                    post_index=index,
                     search_type=search_type,
-                    search_condition=condition
+                    search_condition=condition,
                 )
+                # print(f'{board} 最新文章編號 {Index}')
 
-                if post.delete_status != PTT.data_type.post_delete_status.NOT_DELETED:
-                    continue
+                random_post_index = [i for i in range(index - max_picture, index + 1)]
 
-                if '[正妹]' not in post.title and '[廣告]' not in post.title:
-                    continue
+                random.shuffle(random_post_index)
 
-                # print(Post.getContent())
+                catch_pic = 0
+                for index in random_post_index:
 
-                content = post.content
-                content = content[:content.find('--')]
-                # print(content)
+                    # print(f'準備解析第 {IndexList.index(index) + 1} 篇 編號 {index} 已經蒐集 {Piture} 張圖片')
 
-                all_pic_id = re.findall(
-                    r'https://(.+).jpg',
-                    content
-                )
+                    post = ptt_bot.get_post(
+                        board,
+                        post_index=index,
+                        search_type=search_type,
+                        search_condition=condition
+                    )
 
-                for album in all_pic_id:
-                    pic_url = f'https://{album}.jpg'
+                    if post.delete_status != PTT.data_type.post_delete_status.NOT_DELETED:
+                        continue
 
-                    if pic_url not in woman_temp:
-                        woman_temp.append(pic_url)
-                        catch_pic += 1
+                    if '[正妹]' not in post.title and '[廣告]' not in post.title:
+                        continue
 
+                    # print(Post.getContent())
+
+                    content = post.content
+                    content = content[:content.find('--')]
+                    # print(content)
+
+                    all_pic_id = re.findall(
+                        r'https://(.+).jpg',
+                        content
+                    )
+
+                    for album in all_pic_id:
+                        pic_url = f'https://{album}.jpg'
+
+                        if pic_url not in woman_temp:
+                            woman_temp.append(pic_url)
+                            catch_pic += 1
+
+                        if catch_pic >= max_picture:
+                            break
                     if catch_pic >= max_picture:
                         break
-                if catch_pic >= max_picture:
-                    break
 
-                # all_pic_id = re.findall(
-                #     r'https://(.+).png',
-                #     content
-                # )
-                #
-                # for album in all_pic_id:
-                #     pic_url = f'https://{album}.png'
-                #
-                #     if pic_url not in woman_temp:
-                #         woman_temp.append(pic_url)
-                #         catch_pic += 1
-                #
-                #     if catch_pic >= max_picture:
-                #         break
-                # if catch_pic >= max_picture:
-                #     break
+                    # print(f'已抓取 {catch_pic} 張圖')
 
-                # all_pic_id = re.findall(
-                #     r'https://(.+).gif',
-                #     content
-                # )
-                #
-                # for album in all_pic_id:
-                #     pic_url = f'https://{album}.gif'
-                #
-                #     if pic_url not in woman_temp:
-                #         woman_temp.append(pic_url)
-                #         catch_pic += 1
-                #
-                #     if catch_pic >= max_picture:
-                #         break
-                # if catch_pic >= max_picture:
-                #     break
+            except Exception as e:
+                traceback.print_tb(e.__traceback__)
+                print(e)
+                break
+            # print('=' * 50)
 
-                # print(f'已抓取 {catch_pic} 張圖')
+        ptt_bot.logout()
 
-        except Exception as e:
-            traceback.print_tb(e.__traceback__)
-            print(e)
-            break
-        # print('=' * 50)
+        self.Woman = woman_temp
+        in_update = False
 
-    ptt_bot.logout()
+        print('更新完畢')
+        # print(f'Woman length {len(Woman)}')
 
-    Woman = woman_temp
-    in_update = False
+    def timer(self):
+        while True:
+            self.update()
 
-    print('更新完畢')
-    # print(f'Woman length {len(Woman)}')
+            now = datetime.datetime.now()
+            tomorrow = date.today() - timedelta(-1)
 
+            refresh_time = datetime.datetime(
+                tomorrow.year,
+                tomorrow.month,
+                tomorrow.day,
+                6,
+                0,
+                0)
 
-def timer():
-    while True:
-        update()
+            interval = refresh_time - now
+            sec = interval.days * 24 * 3600 + interval.seconds
 
-        now = datetime.datetime.now()
-        tomorrow = date.today() - timedelta(-1)
+            sec = int(sec + 1)
 
-        refresh_time = datetime.datetime(
-            tomorrow.year,
-            tomorrow.month,
-            tomorrow.day,
-            6,
-            0,
-            0)
+            print(interval)
+            print(f'{sec} 秒後更新表特資料')
+            time.sleep(sec)
 
-        interval = refresh_time - now
-        sec = interval.days * 24 * 3600 + interval.seconds
+    def start(self, test_mode=False):
+        t = threading.Thread(target=self.timer)
+        t.daemon = True
+        t.start()
 
-        print(interval)
-        print(f'{sec} 秒後更新表特資料')
-        time.sleep(sec)
+        if test_mode:
+            t.join()
 
+    def pickup(self, n=1):
+        if len(self.temp_list) < n:
+            self.temp_list = Woman.copy()
 
-def start(test_mode=False):
-    t = threading.Thread(target=timer)
-    t.daemon = True
-    t.start()
+        result = random.sample(self.temp_list, n)
+        # print(f'正妹剩下 {len(WomanTemplist)} 張還沒抽')
 
-    if test_mode:
-        t.join()
-
-
-temp_list = []
-
-
-def pickup(n=1):
-    global temp_list
-    if len(temp_list) < n:
-        global Woman
-        temp_list = Woman.copy()
-
-    result = random.sample(temp_list, n)
-    # print(f'正妹剩下 {len(WomanTemplist)} 張還沒抽')
-
-    return result
+        return result
 
 
 if __name__ == "__main__":
+    pass
     # update()
     # print(pickup())
 
-    start(test_mode=True)
-
+    # start(test_mode=True)
